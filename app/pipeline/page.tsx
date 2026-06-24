@@ -37,17 +37,26 @@ export default function PipelinePage() {
     fetchDeals()
   }, [])
 
-  async function fetchDeals() {
-    const { data } = await supabase.from('deals').select('*').order('created_at', { ascending: false })
-    setDeals(data || [])
-  }
+async function addDeal() {
+  if (!title) return
+  const { data: { user } } = await supabase.auth.getUser()
+  await supabase.from('deals').insert({ 
+    title, value: parseFloat(value) || 0, stage,
+    user_id: user?.id  // ← yeh add karo
+  })
+  setTitle(''); setValue('')
+  fetchDeals()
+}
 
-  async function addDeal() {
-    if (!title) return
-    await supabase.from('deals').insert({ title, value: parseFloat(value) || 0, stage })
-    setTitle(''); setValue('')
-    fetchDeals()
-  }
+async function fetchDeals() {
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data } = await supabase
+    .from('deals')
+    .select('*')
+    .eq('user_id', user?.id)  // ← yeh add karo
+    .order('created_at', { ascending: false })
+  setDeals(data || [])
+}
 
   async function moveStage(deal: Deal, newStage: string) {
     await supabase.from('deals').update({ stage: newStage }).eq('id', deal.id)

@@ -10,21 +10,31 @@ export default function Dashboard() {
   const [closedValue, setClosedValue] = useState(0)
 
   useEffect(() => {
-    async function loadStats() {
-      const { count: contacts } = await supabase.from('contacts').select('*', { count: 'exact', head: true })
-      const { data: deals } = await supabase.from('deals').select('*')
-      const closed = deals?.filter(d => d.stage === 'closed').reduce((sum, d) => sum + (d.value || 0), 0)
-      setContactCount(contacts || 0)
-      setDealCount(deals?.length || 0)
-      setClosedValue(closed || 0)
-    }
+   async function loadStats() {
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  const { count: contacts } = await supabase
+    .from('contacts')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user?.id)  // ← yeh add karo
+
+  const { data: deals } = await supabase
+    .from('deals')
+    .select('*')
+    .eq('user_id', user?.id)  // ← yeh add karo
+
+  const closed = deals?.filter(d => d.stage === 'closed').reduce((sum, d) => sum + (d.value || 0), 0)
+  setContactCount(contacts || 0)
+  setDealCount(deals?.length || 0)
+  setClosedValue(closed || 0)
+}
     loadStats()
   }, [])
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
       <h1 className="text-3xl font-bold mb-2">Welcome back 👋</h1>
-      <p className="text-gray-500 mb-8">Here's your CRM overview</p>
+    <p className="text-gray-500 mb-8">Here&apos;s your CRM overview</p>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-6 mb-10">

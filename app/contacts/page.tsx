@@ -26,18 +26,27 @@ export default function ContactsPage() {
     fetchContacts()
   }, [])
 
-  async function fetchContacts() {
-    const { data } = await supabase.from('contacts').select('*').order('created_at', { ascending: false })
-    setContacts(data || [])
-    setLoading(false)
-  }
+async function fetchContacts() {
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data } = await supabase
+    .from('contacts')
+    .select('*')
+    .eq('user_id', user?.id)  // ← yeh add karo
+    .order('created_at', { ascending: false })
+  setContacts(data || [])
+  setLoading(false)
+}
 
-  async function addContact() {
-    if (!name) return
-    await supabase.from('contacts').insert({ name, email, phone, type, status: 'new' })
-    setName(''); setEmail(''); setPhone('')
-    fetchContacts()
-  }
+async function addContact() {
+  if (!name) return
+  const { data: { user } } = await supabase.auth.getUser()
+  await supabase.from('contacts').insert({ 
+    name, email, phone, type, status: 'new',
+    user_id: user?.id  // ← yeh add karo
+  })
+  setName(''); setEmail(''); setPhone('')
+  fetchContacts()
+}
 
   async function deleteContact(id: string) {
     await supabase.from('contacts').delete().eq('id', id)
