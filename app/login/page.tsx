@@ -12,17 +12,18 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  async function handleLogin() {
-    setLoading(true)
-    setError('')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) {
-      setError(error.message)
-    } else {
-      router.push('/')
-    }
-    setLoading(false)
+async function handleLogin() {
+  setLoading(true)
+  setError('')
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) {
+    setError(error.message)
+  } else if (data.session) {
+    router.refresh()
+    router.push('/')
   }
+  setLoading(false)
+}
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">

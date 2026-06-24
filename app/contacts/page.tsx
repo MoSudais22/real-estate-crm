@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
 
 type Contact = {
   id: string
@@ -19,6 +20,7 @@ export default function ContactsPage() {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [type, setType] = useState('lead')
+  const router = useRouter()
 
   useEffect(() => {
     fetchContacts()
@@ -87,6 +89,7 @@ export default function ContactsPage() {
                   <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">{c.status}</span>
                 </td>
                 <td className="p-3 border">
+                   <button onClick={() => router.push(`/contacts/${c.id}`)} className="text-blue-500 hover:text-blue-700 text-sm mr-3">View</button>
                   <button onClick={() => deleteContact(c.id)} className="text-red-500 hover:text-red-700 text-sm">Delete</button>
                 </td>
               </tr>
