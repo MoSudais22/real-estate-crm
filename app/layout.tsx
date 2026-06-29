@@ -25,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Link href="/" className="text-gray-600 hover:text-blue-600 font-medium">Dashboard</Link>
           <Link href="/contacts" className="text-gray-600 hover:text-blue-600 font-medium">Contacts</Link>
           <Link href="/pipeline" className="text-gray-600 hover:text-blue-600 font-medium">Pipeline</Link>
+          <Link href="/pricing" className="text-gray-600 hover:text-blue-600 font-medium">Pricing</Link>
           <button onClick={handleLogout} className="ml-auto text-sm text-red-500 hover:text-red-700">
             Logout
           </button>
