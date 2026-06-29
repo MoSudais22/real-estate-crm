@@ -38,7 +38,6 @@ export default function Dashboard() {
       .limit(5)
 
     const closed = deals?.filter(d => d.stage === 'closed').reduce((sum, d) => sum + (d.value || 0), 0)
-
     const stages: Record<string, number> = {}
     deals?.forEach(d => { stages[d.stage] = (stages[d.stage] || 0) + 1 })
 
@@ -57,60 +56,59 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-6xl mx-auto p-8">
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Good morning, <span className="text-blue-600 capitalize">{userName}</span> 👋
           </h1>
-          <p className="text-gray-500 mt-1">Here&apos;s what&apos;s happening with your pipeline today</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Here&apos;s what&apos;s happening with your pipeline today</p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between mb-4">
               <div className="bg-blue-50 p-3 rounded-xl">
                 <span className="text-2xl">👥</span>
               </div>
               <span className="text-green-500 text-sm font-medium bg-green-50 px-2 py-1 rounded-full">Active</span>
             </div>
-            <p className="text-3xl font-bold text-gray-900">{contactCount}</p>
-            <p className="text-gray-500 text-sm mt-1">Total Contacts</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">{contactCount}</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Total Contacts</p>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between mb-4">
               <div className="bg-yellow-50 p-3 rounded-xl">
                 <span className="text-2xl">🏠</span>
               </div>
               <span className="text-blue-500 text-sm font-medium bg-blue-50 px-2 py-1 rounded-full">In Progress</span>
             </div>
-            <p className="text-3xl font-bold text-gray-900">{dealCount}</p>
-            <p className="text-gray-500 text-sm mt-1">Active Deals</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">{dealCount}</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Active Deals</p>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between mb-4">
               <div className="bg-green-50 p-3 rounded-xl">
                 <span className="text-2xl">💰</span>
               </div>
               <span className="text-green-500 text-sm font-medium bg-green-50 px-2 py-1 rounded-full">Earned</span>
             </div>
-            <p className="text-3xl font-bold text-gray-900">€{closedValue.toLocaleString()}</p>
-            <p className="text-gray-500 text-sm mt-1">Closed Revenue</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">€{closedValue.toLocaleString()}</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Closed Revenue</p>
           </div>
         </div>
 
         {/* Pipeline Overview + Recent Contacts */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
 
-          {/* Pipeline Breakdown */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-bold text-gray-900 text-lg">Pipeline Overview</h2>
+              <h2 className="font-bold text-gray-900 dark:text-white text-lg">Pipeline Overview</h2>
               <Link href="/pipeline" className="text-blue-600 text-sm hover:underline">View all →</Link>
             </div>
             {Object.keys(dealsByStage).length === 0 ? (
@@ -120,20 +118,18 @@ export default function Dashboard() {
                 {['prospecting', 'offer', 'contract', 'closed'].map(stage => (
                   dealsByStage[stage] ? (
                     <div key={stage} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${stageColors[stage]}`}>
-                          {stage}
-                        </span>
-                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${stageColors[stage]}`}>
+                        {stage}
+                      </span>
                       <div className="flex items-center gap-3 flex-1 mx-4">
-                        <div className="flex-1 bg-gray-100 rounded-full h-2">
+                        <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-2">
                           <div
                             className="bg-blue-500 h-2 rounded-full"
                             style={{ width: `${(dealsByStage[stage] / dealCount) * 100}%` }}
                           />
                         </div>
                       </div>
-                      <span className="font-bold text-gray-700 text-sm">{dealsByStage[stage]}</span>
+                      <span className="font-bold text-gray-700 dark:text-gray-300 text-sm">{dealsByStage[stage]}</span>
                     </div>
                   ) : null
                 ))}
@@ -141,10 +137,9 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Recent Contacts */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-bold text-gray-900 text-lg">Recent Contacts</h2>
+              <h2 className="font-bold text-gray-900 dark:text-white text-lg">Recent Contacts</h2>
               <Link href="/contacts" className="text-blue-600 text-sm hover:underline">View all →</Link>
             </div>
             {recentContacts.length === 0 ? (
@@ -157,7 +152,7 @@ export default function Dashboard() {
                       {c.name?.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-gray-900 text-sm">{c.name}</p>
+                      <p className="font-medium text-gray-900 dark:text-white text-sm">{c.name}</p>
                       <p className="text-gray-400 text-xs">{c.email}</p>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full font-medium
@@ -176,10 +171,10 @@ export default function Dashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { href: '/contacts', icon: '👤', label: 'Add Contact', color: 'bg-blue-50 hover:bg-blue-100' },
-            { href: '/pipeline', icon: '🏠', label: 'Add Deal', color: 'bg-yellow-50 hover:bg-yellow-100' },
-            { href: '/contacts', icon: '📋', label: 'View Contacts', color: 'bg-purple-50 hover:bg-purple-100' },
-            { href: '/pricing', icon: '⭐', label: 'Upgrade Plan', color: 'bg-green-50 hover:bg-green-100' },
+            { href: '/contacts', icon: '👤', label: 'Add Contact', color: 'bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40' },
+            { href: '/pipeline', icon: '🏠', label: 'Add Deal', color: 'bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/20 dark:hover:bg-yellow-900/40' },
+            { href: '/contacts', icon: '📋', label: 'View Contacts', color: 'bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/40' },
+            { href: '/pricing', icon: '⭐', label: 'Upgrade Plan', color: 'bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/40' },
           ].map(action => (
             <Link
               key={action.label}
@@ -187,7 +182,7 @@ export default function Dashboard() {
               className={`${action.color} rounded-2xl p-5 text-center transition-all`}
             >
               <span className="text-3xl block mb-2">{action.icon}</span>
-              <span className="text-sm font-medium text-gray-700">{action.label}</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{action.label}</span>
             </Link>
           ))}
         </div>

@@ -12,11 +12,12 @@ type Deal = {
 
 const STAGES = ['prospecting', 'offer', 'contract', 'closed']
 
+// UPDATED: dark mode colors added in STAGE_CONFIG
 const STAGE_CONFIG: Record<string, { label: string; icon: string; color: string; bg: string; border: string }> = {
-  prospecting: { label: 'Prospecting', icon: '🔍', color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200' },
-  offer: { label: 'Offer', icon: '📝', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
-  contract: { label: 'Contract', icon: '🤝', color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200' },
-  closed: { label: 'Closed', icon: '✅', color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200' },
+  prospecting: { label: 'Prospecting', icon: '🔍', color: 'text-gray-600 dark:text-gray-300', bg: 'bg-gray-50 dark:bg-gray-900', border: 'border-gray-200 dark:border-gray-700' },
+  offer: { label: 'Offer', icon: '📝', color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800' },
+  contract: { label: 'Contract', icon: '🤝', color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-50 dark:bg-yellow-900/20', border: 'border-yellow-200 dark:border-yellow-800' },
+  closed: { label: 'Closed', icon: '✅', color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800' },
 }
 
 export default function PipelinePage() {
@@ -52,31 +53,20 @@ export default function PipelinePage() {
     fetchDeals()
   }
 
-async function moveStage(deal: Deal, newStage: string) {
-  await supabase.from('deals').update({ stage: newStage }).eq('id', deal.id)
-
-  // Har stage move pe email bhejo
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  const stageMessages: Record<string, string> = {
-    prospecting: `Deal moved to Prospecting: ${deal.title}`,
-    offer: `Deal moved to Offer stage: ${deal.title}`,
-    contract: `Deal moved to Contract: ${deal.title}`,
-    closed: `🎉 Deal Closed: ${deal.title}`,
-  }
-
-  await fetch('/api/send-email', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      to: user?.email,
-      contactName: deal.title,
-      type: newStage === 'closed' ? 'deal_closed' : 'follow_up',
+  async function moveStage(deal: Deal, newStage: string) {
+    await supabase.from('deals').update({ stage: newStage }).eq('id', deal.id)
+    const { data: { user } } = await supabase.auth.getUser()
+    await fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: user?.email,
+        contactName: deal.title,
+        type: newStage === 'closed' ? 'deal_closed' : 'follow_up',
+      })
     })
-  })
-
-  fetchDeals()
-}
+    fetchDeals()
+  }
 
   async function deleteDeal(id: string) {
     await supabase.from('deals').delete().eq('id', id)
@@ -87,14 +77,16 @@ async function moveStage(deal: Deal, newStage: string) {
   const totalValue = (s: string) => dealsByStage(s).reduce((sum, d) => sum + (d.value || 0), 0)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    // UPDATED: dark:bg-gray-950 added
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-7xl mx-auto p-8">
 
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Pipeline</h1>
-            <p className="text-gray-500 mt-1">{deals.length} total deals</p>
+            {/* UPDATED: dark:text-white added */}
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Pipeline</h1>
+            {/* UPDATED: dark:text-gray-400 added */}
+            <p className="text-gray-500 dark:text-gray-400 mt-1">{deals.length} total deals</p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
@@ -104,26 +96,29 @@ async function moveStage(deal: Deal, newStage: string) {
           </button>
         </div>
 
-        {/* Add Deal Form */}
         {showForm && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
-            <h2 className="font-bold text-gray-900 mb-4">New Deal</h2>
+          // UPDATED: dark:bg-gray-900 dark:border-gray-800 added
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-6">
+            {/* UPDATED: dark:text-white added */}
+            <h2 className="font-bold text-gray-900 dark:text-white mb-4">New Deal</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {/* UPDATED: dark classes added on all inputs */}
               <input
-                className="border border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border border-gray-200 dark:border-gray-700 p-3 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Deal title (e.g. 123 Main St)"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
               />
               <input
-                className="border border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border border-gray-200 dark:border-gray-700 p-3 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Value (€)"
                 type="number"
                 value={value}
                 onChange={e => setValue(e.target.value)}
               />
+              {/* UPDATED: dark classes added on select */}
               <select
-                className="border border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border border-gray-200 dark:border-gray-700 p-3 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={stage}
                 onChange={e => setStage(e.target.value)}
               >
@@ -134,14 +129,14 @@ async function moveStage(deal: Deal, newStage: string) {
               <button onClick={addDeal} className="bg-blue-600 text-white px-6 py-2.5 rounded-xl hover:bg-blue-700 font-medium">
                 Save Deal
               </button>
-              <button onClick={() => setShowForm(false)} className="bg-gray-100 text-gray-700 px-6 py-2.5 rounded-xl hover:bg-gray-200 font-medium">
+              {/* UPDATED: dark:bg-gray-800 dark:text-gray-300 added */}
+              <button onClick={() => setShowForm(false)} className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-6 py-2.5 rounded-xl font-medium">
                 Cancel
               </button>
             </div>
           </div>
         )}
 
-        {/* Kanban Board */}
         {loading ? (
           <div className="text-center py-20 text-gray-400">Loading...</div>
         ) : (
@@ -150,47 +145,50 @@ async function moveStage(deal: Deal, newStage: string) {
               const config = STAGE_CONFIG[s]
               const stageDeals = dealsByStage(s)
               return (
+                // UPDATED: dark classes already in config.bg and config.border
                 <div key={s} className={`rounded-2xl border-2 ${config.border} ${config.bg} p-4`}>
 
-                  {/* Column Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <span>{config.icon}</span>
                       <h2 className={`font-bold text-sm ${config.color}`}>{config.label}</h2>
                     </div>
-                    <span className="bg-white text-gray-600 text-xs font-bold px-2 py-1 rounded-full border">
+                    {/* UPDATED: dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 added */}
+                    <span className="bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-bold px-2 py-1 rounded-full border dark:border-gray-700">
                       {stageDeals.length}
                     </span>
                   </div>
 
-                  {/* Total Value */}
                   {stageDeals.length > 0 && (
                     <p className={`text-xs font-medium mb-3 ${config.color}`}>
                       €{totalValue(s).toLocaleString()} total
                     </p>
                   )}
 
-                  {/* Deal Cards */}
                   <div className="flex flex-col gap-3 min-h-32">
                     {stageDeals.length === 0 ? (
-                      <div className="text-center py-8 text-gray-300 text-sm">
+                      // UPDATED: dark:text-gray-600 added
+                      <div className="text-center py-8 text-gray-300 dark:text-gray-600 text-sm">
                         No deals
                       </div>
                     ) : (
                       stageDeals.map(deal => (
-                        <div key={deal.id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all">
-                          <p className="font-semibold text-gray-900 text-sm mb-1">{deal.title}</p>
-                          <p className="text-green-600 font-bold text-sm mb-3">
+                        // UPDATED: dark:bg-gray-800 dark:border-gray-700 added
+                        <div key={deal.id} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all">
+                          {/* UPDATED: dark:text-white added */}
+                          <p className="font-semibold text-gray-900 dark:text-white text-sm mb-1">{deal.title}</p>
+                          {/* UPDATED: dark:text-green-400 added */}
+                          <p className="text-green-600 dark:text-green-400 font-bold text-sm mb-3">
                             €{deal.value?.toLocaleString()}
                           </p>
 
-                          {/* Move buttons */}
                           <div className="flex flex-wrap gap-1 mb-2">
                             {STAGES.filter(st => st !== s).map(st => (
+                              // UPDATED: dark classes added on move buttons
                               <button
                                 key={st}
                                 onClick={() => moveStage(deal, st)}
-                                className="text-xs bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2 py-1 rounded-lg text-gray-600 transition-all"
+                                className="text-xs bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 px-2 py-1 rounded-lg text-gray-600 dark:text-gray-300 transition-all"
                               >
                                 → {STAGE_CONFIG[st].icon}
                               </button>
