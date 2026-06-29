@@ -52,10 +52,31 @@ export default function PipelinePage() {
     fetchDeals()
   }
 
-  async function moveStage(deal: Deal, newStage: string) {
-    await supabase.from('deals').update({ stage: newStage }).eq('id', deal.id)
-    fetchDeals()
+async function moveStage(deal: Deal, newStage: string) {
+  await supabase.from('deals').update({ stage: newStage }).eq('id', deal.id)
+
+  // Har stage move pe email bhejo
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  const stageMessages: Record<string, string> = {
+    prospecting: `Deal moved to Prospecting: ${deal.title}`,
+    offer: `Deal moved to Offer stage: ${deal.title}`,
+    contract: `Deal moved to Contract: ${deal.title}`,
+    closed: `🎉 Deal Closed: ${deal.title}`,
   }
+
+  await fetch('/api/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      to: user?.email,
+      contactName: deal.title,
+      type: newStage === 'closed' ? 'deal_closed' : 'follow_up',
+    })
+  })
+
+  fetchDeals()
+}
 
   async function deleteDeal(id: string) {
     await supabase.from('deals').delete().eq('id', id)

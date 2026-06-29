@@ -40,14 +40,28 @@ export default function ContactsPage() {
     setLoading(false)
   }
 
-  async function addContact() {
-    if (!name) return
-    const { data: { user } } = await supabase.auth.getUser()
-    await supabase.from('contacts').insert({ name, email, phone, type, status: 'new', user_id: user?.id })
-    setName(''); setEmail(''); setPhone('')
-    setShowForm(false)
-    fetchContacts()
-  }
+async function addContact() {
+  if (!name) return
+  const { data: { user } } = await supabase.auth.getUser()
+  await supabase.from('contacts').insert({
+    name, email, phone, type, status: 'new', user_id: user?.id
+  })
+
+  // Email notification bhejo
+  await fetch('/api/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      to: user?.email,
+      contactName: name,
+      type: 'new_contact'
+    })
+  })
+
+  setName(''); setEmail(''); setPhone('')
+  setShowForm(false)
+  fetchContacts()
+}
 
   async function deleteContact(id: string) {
     await supabase.from('contacts').delete().eq('id', id)

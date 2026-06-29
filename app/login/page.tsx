@@ -90,7 +90,11 @@ export default function LoginPage() {
                 onKeyDown={e => e.key === 'Enter' && handleLogin()}
               />
             </div>
-
+<div className="flex justify-end">
+  <Link href="/reset-password" className="text-sm text-blue-600 hover:underline">
+    Forgot password?
+  </Link>
+</div>
             <button
               onClick={handleLogin}
               disabled={loading}
