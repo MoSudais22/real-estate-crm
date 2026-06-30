@@ -1,13 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  // ... (sab existing code yahan as is rahega, sirf function ka naam SignupPage se SignupForm kar do)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [accountType, setAccountType] = useState<'owner' | 'agent'>('owner')
@@ -168,5 +169,13 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-gray-400">Loading...</div>}>
+      <SignupForm />
+    </Suspense>
   )
 }
