@@ -31,8 +31,10 @@ function Sidebar() {
     { href: '/pipeline', icon: '📊', label: 'Pipeline' },
     { href: '/tasks', icon: '✅', label: 'Tasks' },
     { href: '/analytics', icon: '📈', label: 'Analytics' },
+  
     { href: '/pricing', icon: '⭐', label: 'Pricing' },
     { href: '/settings', icon: '⚙️', label: 'Settings' },
+      { href: '/team', icon: '🏢', label: 'Team' },
   ]
 
   return (
