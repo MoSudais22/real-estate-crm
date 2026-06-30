@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import Papa from 'papaparse'
 
 type Contact = {
   id: string
@@ -51,6 +52,25 @@ export default function ContactsPage() {
     await supabase.from('contacts').delete().eq('id', id)
     fetchContacts()
   }
+  function exportToCSV() {
+  const csvData = contacts.map(c => ({
+    Name: c.name,
+    Email: c.email,
+    Phone: c.phone,
+    Type: c.type,
+    Status: c.status,
+  }))
+
+  const csv = Papa.unparse(csvData)
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.setAttribute('download', `contacts_${new Date().toISOString().split('T')[0]}.csv`)
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
 
   const filtered = contacts.filter(c => {
     const matchSearch = c.name?.toLowerCase().includes(search.toLowerCase()) || c.email?.toLowerCase().includes(search.toLowerCase())
@@ -69,16 +89,24 @@ export default function ContactsPage() {
       <div className="max-w-6xl mx-auto p-8">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Contacts</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">{contacts.length} total contacts</p>
-          </div>
-          <button onClick={() => setShowForm(!showForm)} className="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 font-medium flex items-center gap-2">
-            <span className="text-lg">+</span> Add Contact
-          </button>
-        </div>
-
+       <div className="flex items-center justify-between mb-8">
+  <div>
+    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Contacts</h1>
+    <p className="text-gray-500 dark:text-gray-400 mt-1">{contacts.length} total contacts</p>
+  </div>
+  <div className="flex gap-3">
+    <button
+      onClick={exportToCSV}
+      disabled={contacts.length === 0}
+      className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-5 py-2.5 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 font-medium flex items-center gap-2 disabled:opacity-50"
+    >
+      📤 Export CSV
+    </button>
+    <button onClick={() => setShowForm(!showForm)} className="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 font-medium flex items-center gap-2">
+      <span className="text-lg">+</span> Add Contact
+    </button>
+  </div>
+</div>
         {/* Add Form */}
         {showForm && (
           <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-6">
@@ -94,6 +122,9 @@ export default function ContactsPage() {
               </select>
             </div>
             <div className="flex gap-3 mt-4">
+
+                
+
               <button onClick={addContact} className="bg-blue-600 text-white px-6 py-2.5 rounded-xl hover:bg-blue-700 font-medium">Save Contact</button>
               <button onClick={() => setShowForm(false)} className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-6 py-2.5 rounded-xl font-medium">Cancel</button>
             </div>
