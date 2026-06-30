@@ -59,30 +59,30 @@ export default function TeamPage() {
     }
   }
 
-async function inviteMember() {
-  if (!inviteEmail || !agency) return
-  await supabase.from('team_members').insert({
-    agency_id: agency.id,
-    email: inviteEmail,
-    role: 'agent',
-    status: 'pending'
-  })
-
-  // Email bhejo
-  await fetch('/api/send-email', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      to: inviteEmail,
-      contactName: agency.name,
-      type: 'team_invite'
+  async function inviteMember() {
+    if (!inviteEmail || !agency) return
+    await supabase.from('team_members').insert({
+      agency_id: agency.id,
+      email: inviteEmail,
+      role: 'agent',
+      status: 'pending'
     })
-  })
 
-  setInviteEmail('')
-  setMessage(`Invitation sent to ${inviteEmail}!`)
-  loadMembers(agency.id)
-}
+    // UPDATED: 'to' field set to inviteEmail so send-email route receives the recipient correctly
+    await fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: inviteEmail,
+        contactName: agency.name,
+        type: 'team_invite'
+      })
+    })
+
+    setInviteEmail('')
+    setMessage(`Invitation sent to ${inviteEmail}!`)
+    loadMembers(agency.id)
+  }
 
   async function removeMember(id: string) {
     await supabase.from('team_members').delete().eq('id', id)
@@ -109,7 +109,6 @@ async function inviteMember() {
         )}
 
         {!agency ? (
-          // No agency yet — create one
           <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
             <div className="text-5xl mb-4">🏢</div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Create Your Agency</h2>
@@ -128,7 +127,6 @@ async function inviteMember() {
           </div>
         ) : (
           <>
-            {/* Agency Info */}
             <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-6">
               <div className="flex items-center gap-4">
                 <div className="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold rounded-xl w-14 h-14 flex items-center justify-center text-2xl">
@@ -141,7 +139,6 @@ async function inviteMember() {
               </div>
             </div>
 
-            {/* Invite Member */}
             <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-6">
               <h2 className="font-bold text-gray-900 dark:text-white mb-4">Invite Team Member</h2>
               <div className="flex gap-3">
@@ -158,7 +155,6 @@ async function inviteMember() {
               </div>
             </div>
 
-            {/* Team Members List */}
             <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
               <h2 className="font-bold text-gray-900 dark:text-white mb-4">Team Members</h2>
               {members.length === 0 ? (
