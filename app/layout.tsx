@@ -32,6 +32,7 @@ function Sidebar() {
     { href: '/tasks', icon: '✅', label: 'Tasks' },
     { href: '/analytics', icon: '📈', label: 'Analytics' },
     { href: '/pricing', icon: '⭐', label: 'Pricing' },
+    { href: '/settings', icon: '⚙️', label: 'Settings' },
   ]
 
   return (
