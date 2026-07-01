@@ -32,16 +32,30 @@ export default function PipelinePage() {
     fetchDeals()
   }, [])
 
-  async function fetchDeals() {
-    const { data: { user } } = await supabase.auth.getUser()
-    const { data } = await supabase
-      .from('deals')
-      .select('*')
-      .eq('user_id', user?.id)
-      .order('created_at', { ascending: false })
-    setDeals(data || [])
-    setLoading(false)
+async function fetchDeals() {
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Check karo owner hai ya agent
+  const { data: agency } = await supabase
+    .from('agencies')
+    .select('id')
+    .eq('owner_id', user?.id)
+    .single()
+
+  let query = supabase.from('deals').select('*').order('created_at', { ascending: false })
+
+  if (agency) {
+    // Owner — agency ke sab deals dikhao
+    query = query.eq('agency_id', agency.id)
+  } else {
+    // Agent — sirf apne deals
+    query = query.eq('user_id', user?.id)
   }
+
+  const { data } = await query
+  setDeals(data || [])
+  setLoading(false)
+}
 
 async function addDeal() {
   if (!title) return

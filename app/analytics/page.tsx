@@ -17,20 +17,41 @@ export default function AnalyticsPage() {
     loadData()
   }, [])
 
-  async function loadData() {
-    const { data: { user } } = await supabase.auth.getUser()
+async function loadData() {
+  const { data: { user } } = await supabase.auth.getUser()
 
-    const [{ data: dealsData }, { data: contactsData }, { data: tasksData }] = await Promise.all([
-      supabase.from('deals').select('*').eq('user_id', user?.id),
-      supabase.from('contacts').select('*').eq('user_id', user?.id),
-      supabase.from('tasks').select('*').eq('user_id', user?.id),
-    ])
+  // Check karo owner hai ya agent
+  const { data: agency } = await supabase
+    .from('agencies')
+    .select('id')
+    .eq('owner_id', user?.id)
+    .single()
 
-    setDeals(dealsData || [])
-    setContacts(contactsData || [])
-    setTasks(tasksData || [])
-    setLoading(false)
+  let dealsQuery = supabase.from('deals').select('*')
+  let contactsQuery = supabase.from('contacts').select('*')
+  let tasksQuery = supabase.from('tasks').select('*')
+
+  if (agency) {
+    // Owner — agency ka combined data
+    dealsQuery = dealsQuery.eq('agency_id', agency.id)
+    contactsQuery = contactsQuery.eq('agency_id', agency.id)
+    tasksQuery = tasksQuery.eq('agency_id', agency.id)
+  } else {
+    // Agent — sirf apna data
+    dealsQuery = dealsQuery.eq('user_id', user?.id)
+    contactsQuery = contactsQuery.eq('user_id', user?.id)
+    tasksQuery = tasksQuery.eq('user_id', user?.id)
   }
+
+  const [{ data: dealsData }, { data: contactsData }, { data: tasksData }] = await Promise.all([
+    dealsQuery, contactsQuery, tasksQuery
+  ])
+
+  setDeals(dealsData || [])
+  setContacts(contactsData || [])
+  setTasks(tasksData || [])
+  setLoading(false)
+}
 
   const pipelineData = [
     { stage: 'Prospecting', count: deals.filter(d => d.stage === 'prospecting').length, value: deals.filter(d => d.stage === 'prospecting').reduce((s, d) => s + d.value, 0) },
