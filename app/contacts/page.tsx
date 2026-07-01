@@ -28,25 +28,73 @@ export default function ContactsPage() {
 
   useEffect(() => { fetchContacts() }, [])
 
-  async function fetchContacts() {
-    const { data: { user } } = await supabase.auth.getUser()
-    const { data } = await supabase.from('contacts').select('*').eq('user_id', user?.id).order('created_at', { ascending: false })
-    setContacts(data || [])
-    setLoading(false)
+async function fetchContacts() {
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Check karo owner hai ya agent
+  const { data: agency } = await supabase
+    .from('agencies')
+    .select('id')
+    .eq('owner_id', user?.id)
+    .single()
+
+  let query = supabase.from('contacts').select('*').order('created_at', { ascending: false })
+
+  if (agency) {
+    // Owner hai — agency ke sab contacts dikhao
+    query = query.eq('agency_id', agency.id)
+  } else {
+    // Agent hai — sirf apne contacts
+    query = query.eq('user_id', user?.id)
   }
 
-  async function addContact() {
-    if (!name) return
-    const { data: { user } } = await supabase.auth.getUser()
-    await supabase.from('contacts').insert({ name, email, phone, type, status: 'new', user_id: user?.id })
-    await fetch('/api/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to: user?.email, contactName: name, type: 'new_contact' })
-    })
-    setName(''); setEmail(''); setPhone(''); setShowForm(false)
-    fetchContacts()
+  const { data } = await query
+  setContacts(data || [])
+  setLoading(false)
+}
+
+async function addContact() {
+  if (!name) return
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  // Agency ID dhundo
+  let agencyId = null
+  
+  // Pehle check karo kya owner hai
+  const { data: agency } = await supabase
+    .from('agencies')
+    .select('id')
+    .eq('owner_id', user?.id)
+    .single()
+  
+  if (agency) {
+    agencyId = agency.id
+  } else {
+    // Agent hai — team_members se agency dhundo
+    const { data: membership } = await supabase
+      .from('team_members')
+      .select('agency_id')
+      .eq('user_id', user?.id)
+      .eq('status', 'active')
+      .single()
+    agencyId = membership?.agency_id || null
   }
+
+  await supabase.from('contacts').insert({
+    name, email, phone, type, status: 'new',
+    user_id: user?.id,
+    agency_id: agencyId  // ← yeh add kiya
+  })
+
+  await fetch('/api/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ to: user?.email, contactName: name, type: 'new_contact' })
+  })
+
+  setName(''); setEmail(''); setPhone(''); setShowForm(false)
+  fetchContacts()
+}
 
   async function deleteContact(id: string) {
     await supabase.from('contacts').delete().eq('id', id)

@@ -43,15 +43,39 @@ export default function PipelinePage() {
     setLoading(false)
   }
 
-  async function addDeal() {
-    if (!title) return
-    const { data: { user } } = await supabase.auth.getUser()
-    await supabase.from('deals').insert({
-      title, value: parseFloat(value) || 0, stage, user_id: user?.id
-    })
-    setTitle(''); setValue(''); setShowForm(false)
-    fetchDeals()
+async function addDeal() {
+  if (!title) return
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Agency ID dhundo
+  let agencyId = null
+  const { data: agency } = await supabase
+    .from('agencies')
+    .select('id')
+    .eq('owner_id', user?.id)
+    .single()
+
+  if (agency) {
+    agencyId = agency.id
+  } else {
+    const { data: membership } = await supabase
+      .from('team_members')
+      .select('agency_id')
+      .eq('user_id', user?.id)
+      .eq('status', 'active')
+      .single()
+    agencyId = membership?.agency_id || null
   }
+
+  await supabase.from('deals').insert({
+    title, value: parseFloat(value) || 0, stage,
+    user_id: user?.id,
+    agency_id: agencyId  // ← yeh add kiya
+  })
+
+  setTitle(''); setValue(''); setShowForm(false)
+  fetchDeals()
+}
 
   async function moveStage(deal: Deal, newStage: string) {
     await supabase.from('deals').update({ stage: newStage }).eq('id', deal.id)

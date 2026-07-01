@@ -16,37 +16,47 @@ export default function Dashboard() {
     loadStats()
   }, [])
 
-  async function loadStats() {
-    const { data: { user } } = await supabase.auth.getUser()
-    setUserName(user?.email?.split('@')[0] || 'Agent')
+async function loadStats() {
+  const { data: { user } } = await supabase.auth.getUser()
+  setUserName(user?.email?.split('@')[0] || 'Agent')
 
-    const { count: contacts } = await supabase
-      .from('contacts')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user?.id)
+  // Check karo owner hai ya agent
+  const { data: agency } = await supabase
+    .from('agencies')
+    .select('id')
+    .eq('owner_id', user?.id)
+    .single()
 
-    const { data: deals } = await supabase
-      .from('deals')
-      .select('*')
-      .eq('user_id', user?.id)
+  let contactsQuery = supabase.from('contacts').select('*', { count: 'exact', head: true })
+  let dealsQuery = supabase.from('deals').select('*')
+  let recentQuery = supabase.from('contacts').select('*').order('created_at', { ascending: false }).limit(5)
 
-    const { data: recent } = await supabase
-      .from('contacts')
-      .select('*')
-      .eq('user_id', user?.id)
-      .order('created_at', { ascending: false })
-      .limit(5)
-
-    const closed = deals?.filter(d => d.stage === 'closed').reduce((sum, d) => sum + (d.value || 0), 0)
-    const stages: Record<string, number> = {}
-    deals?.forEach(d => { stages[d.stage] = (stages[d.stage] || 0) + 1 })
-
-    setContactCount(contacts || 0)
-    setDealCount(deals?.length || 0)
-    setClosedValue(closed || 0)
-    setRecentContacts(recent || [])
-    setDealsByStage(stages)
+  if (agency) {
+    // Owner — agency ke sab data dikhao
+    contactsQuery = contactsQuery.eq('agency_id', agency.id)
+    dealsQuery = dealsQuery.eq('agency_id', agency.id)
+    recentQuery = recentQuery.eq('agency_id', agency.id)
+  } else {
+    // Agent — sirf apna data
+    contactsQuery = contactsQuery.eq('user_id', user?.id)
+    dealsQuery = dealsQuery.eq('user_id', user?.id)
+    recentQuery = recentQuery.eq('user_id', user?.id)
   }
+
+  const { count: contacts } = await contactsQuery
+  const { data: deals } = await dealsQuery
+  const { data: recent } = await recentQuery
+
+  const closed = deals?.filter(d => d.stage === 'closed').reduce((sum, d) => sum + (d.value || 0), 0)
+  const stages: Record<string, number> = {}
+  deals?.forEach(d => { stages[d.stage] = (stages[d.stage] || 0) + 1 })
+
+  setContactCount(contacts || 0)
+  setDealCount(deals?.length || 0)
+  setClosedValue(closed || 0)
+  setRecentContacts(recent || [])
+  setDealsByStage(stages)
+}
 
   const stageColors: Record<string, string> = {
     prospecting: 'bg-gray-200 text-gray-700',
