@@ -1,5 +1,5 @@
 'use client'
-
+import { useRole } from '@/lib/useRole'
 import { Geist } from 'next/font/google'
 import './globals.css'
 import Link from 'next/link'
@@ -16,6 +16,8 @@ function Sidebar() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
+   const { role } = useRole()
+
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -31,10 +33,12 @@ function Sidebar() {
     { href: '/pipeline', icon: '📊', label: 'Pipeline' },
     { href: '/tasks', icon: '✅', label: 'Tasks' },
     { href: '/analytics', icon: '📈', label: 'Analytics' },
-  
-    { href: '/pricing', icon: '⭐', label: 'Pricing' },
-    { href: '/settings', icon: '⚙️', label: 'Settings' },
+    // UPDATED: Pricing sirf owner ko dikhao
+    ...(role === 'owner' ? [
+      { href: '/pricing', icon: '⭐', label: 'Pricing' },
       { href: '/team', icon: '🏢', label: 'Team' },
+    ] : []),
+    { href: '/settings', icon: '⚙️', label: 'Settings' },
   ]
 
   return (
