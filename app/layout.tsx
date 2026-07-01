@@ -37,6 +37,7 @@ function Sidebar() {
     ...(role === 'owner' ? [
       { href: '/pricing', icon: '⭐', label: 'Pricing' },
       { href: '/team', icon: '🏢', label: 'Team' },
+        { href: '/owner', icon: '📊', label: 'Performance' },
     ] : []),
     { href: '/settings', icon: '⚙️', label: 'Settings' },
   ]
